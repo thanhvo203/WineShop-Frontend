@@ -1,9 +1,11 @@
 import React from "react";
 
 function Footer() {
-    return (
-        <>
- <footer className="ftco-footer">
+  return (
+    <>
+
+      <section className="ftco-section"></section>
+      <footer className="ftco-footer">
         <div className="container">
           <div className="row mb-5">
             <div className="col-sm-12 col-md">
@@ -16,23 +18,7 @@ function Footer() {
                 <p>
                   Far far away, behind the word mountains, far from the countries.
                 </p>
-                <ul className="ftco-footer-social list-unstyled mt-2">
-                  <li className="ftco-animate">
-                    <a href="#">
-                      <span className="fa fa-twitter" />
-                    </a>
-                  </li>
-                  <li className="ftco-animate">
-                    <a href="#">
-                      <span className="fa fa-facebook" />
-                    </a>
-                  </li>
-                  <li className="ftco-animate">
-                    <a href="#">
-                      <span className="fa fa-instagram" />
-                    </a>
-                  </li>
-                </ul>
+
               </div>
             </div>
             <div className="col-sm-12 col-md">
@@ -175,7 +161,7 @@ function Footer() {
           </div>
         </div>
       </footer>
-        </>
-    )
+    </>
+  )
 }
 export default Footer;

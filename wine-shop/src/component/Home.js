@@ -94,7 +94,7 @@ function Home() {
                     <div className="row">
                         {wines.length > 0 && wines.map((item) => {
                             return (
-                                <div className="col-md-3 d-flex">
+                                <div className="col-md-3 d-flex" key={item.idWines}>
                                     <div className="product ftco-animate">
                                         <div className="img d-flex align-items-center justify-content-center" style={{ backgroundImage: `url(${item.imageWines})` }}>
 

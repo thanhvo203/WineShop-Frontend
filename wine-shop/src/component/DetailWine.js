@@ -24,10 +24,10 @@ function DetailWine() {
         <div className="container">
           <div className="row">
             <div className="col-lg-6 mb-5">
-              <a  className="image-popup prod-img-bg">
-                <img
+              <a  className="image-popup prod-img-bg" style={{height:'800px', width:'504px'}}>
+                <img style={{height:'809px',width:'550px'}}
                   src= {img}
-                  className="img-fluid"
+                  
                   alt="Colorlib Template"
                 />
               </a>
@@ -53,10 +53,10 @@ function DetailWine() {
                   </p>
                 </p>
               </div>
-              <p className="price">
+              <p className="price" style={{marginTop:'-32px'}}>
                 <span>${wine.priceWines}.00</span>
               </p>
-              <p>
+              <p style={{marginTop:'-20px'}}>
                 {wine.descriptionWines}
               </p>
               <div className="row mt-4">

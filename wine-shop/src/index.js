@@ -9,6 +9,7 @@ import ListWine from './component/ListWines';
 import Login from './component/Login';
 import Resigter from './component/Resigter';
 import Layout from './component/Layout';
+import Cart from './component/Cart';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -19,6 +20,7 @@ root.render(
         <Route path='/login' element={<Login />} />
         <Route path='/resigter' element={<Resigter />} />
         <Route element={<Layout />}>
+          <Route path='/home/cart' element={<Cart />}/>
           <Route path='/home' element={<Home />} />
           <Route path="/home/detail/:id" element={<DetailWine />}></Route>
           <Route path='/home/wines' element={<ListWine />}></Route>
