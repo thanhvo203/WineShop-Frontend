@@ -6,9 +6,17 @@ export async function getListWines() {
     const resolve = await axios.get(`http://localhost:8080/wines`)
     return resolve.data;
 }
+export async function getCustomerByIdAccount(idAccount) {
+    const resolve = await axios.get(`http://localhost:8080/wines/customer/${idAccount}`)
+    return resolve.data;
+}
+export async function getLargestPrice() {
+    const resolve = await axios.get(`http://localhost:8080/wines/largest-price`)
+    return resolve.data;
+}
 
-export async function getAllListWines(firstAlcohol,lastAlcohol,color,flavor,country,idType) {
-    const resolve = await axios.get(`http://localhost:8080/wines/products?firstAlcohol=${firstAlcohol}&&lastAlcohol=${lastAlcohol}&&color=${color}&&flavor=${flavor}&&country=${country}&&idType=${idType}`)
+export async function getAllListWines(page,firstAlcohol,lastAlcohol,color,flavor,country,nameType,nameWines,minPrice,maxPrice) {
+    const resolve = await axios.get(`http://localhost:8080/wines/products?page=${page}&&firstAlcohol=${firstAlcohol}&&lastAlcohol=${lastAlcohol}&&color=${color}&&flavor=${flavor}&&country=${country}&&nameType=${nameType}&&nameWines=${nameWines}&&minPrice=${minPrice}&&maxPrice=${maxPrice}`)
     return resolve.data;
 }
 export async function getWinesById(id) {
@@ -43,15 +51,19 @@ export const inforFromToken = () => {
     }
 }
 export async function listCart(id) {
-    const resolve = await axios.get(`http://localhost:8080/wines/cart/list?id=${id}`)
+    const resolve = await axios.get(`http://localhost:8080/wines/cart/list/${id}`)
     return resolve.data;
 }
 export async function addToCart(quantity,idCustomer,idWines) {
-    const resolve = await axios.post(`http://localhost:8080/wines/cart/add?quantity=${quantity}&&idCustomer=${idCustomer}&&idWines=${idWines}`)
+    const resolve = await axios.post(`http://localhost:8080/wines/cart/add/${quantity}/${idCustomer}/${idWines}`)
     return resolve.data;
 }
-export async function deleteFromCart(idWines) {
-    const resolve = await axios.patch(`http://localhost:8080/wines/cart/delete/${idWines}`)
+export async function deleteFromCart(idWines,idCustomer) {
+    const resolve = await axios.delete(`http://localhost:8080/wines/cart/delete/${idWines}?idCustomer=${idCustomer}`)
     return resolve.data;
 }
+export async function updateCart(idCart,newQuantity,idWines,idCustomer) {
+    const resolve = await axios.patch(`http://localhost:8080/wines/cart/update/${idCart}?newQuantity=${newQuantity}&&idWines=${idWines}&&idCustomer=${idCustomer}`)
+   return resolve.data;
+}   
 

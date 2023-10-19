@@ -103,7 +103,7 @@ function Login() {
                                                         className="text-md-center"
 
                                                     >
-                                                        <a className="checkbox-wrap checkbox-primary" style={{ fontSize: '25px', color: 'white' }}>Sign up</a>
+                                                        <Link to={`/resigter`} className="checkbox-wrap checkbox-primary" style={{ fontSize: '25px', color: 'white' }}>Sign up</Link>
                                                     </div>
 
                                                 </div>

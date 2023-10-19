@@ -1,20 +1,63 @@
 import React, { useEffect, useState } from 'react';
-import { getListWines } from '../service/WinesService';
-import { Link } from 'react-router-dom';
+import { addToCart, getListWines, inforFromToken } from '../service/WinesService';
+import { Link, useNavigate } from 'react-router-dom';
+import jwtDecode from 'jwt-decode';
+import { useDispatch } from 'react-redux';
+import {  getList } from '../redux/action';
+import Header from './Header';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 
 function Home() {
+    const navigate = useNavigate();
+    const dispatch = useDispatch()
 
     const [wines, setWines] = useState();
+    const [user, setUser] = useState({});
 
-    const getList = async () => {
+    const getUser = async () => {
+        const data = await inforFromToken();
+        setUser(data);
+    }
+
+    const listHome = async () => {
         const data = await getListWines();
         setWines(data);
     }
+    const add = async (quantity, idCustomer, idWines) => {
+        console.log(quantity, idCustomer, idWines);
+        try {
+            if(user === null) {
+              Swal.fire({
+                icon:'warning',
+                timer:2000,
+                title:'Please log in before performing this action',
+                showConfirmButton:true,
+                showCancelButton:true,
+                confirmButtonText: "Go to Log in"
+              }).then(async(result) => {
+                if(result.isConfirmed) {
+                  navigate("/login")
+                }
+              })
+            }else{
+            await addToCart(quantity, user.id, idWines)
+            dispatch(getList(user.id))
+            toast.success("Add success", {
+                autoClose: 500
+            })
+          }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
-        getList()
+        getUser();
+        listHome()
     }, [])
-    console.log(wines);
+
     if (!wines) {
         return null;
     }
@@ -23,7 +66,7 @@ function Home() {
         <div>
             <link rel="stylesheet"
                 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
-           
+
             <section className="ftco-section ftco-no-pb">
                 <div className="container">
                     <div className="row">
@@ -100,7 +143,11 @@ function Home() {
 
                                             <div className="desc">
                                                 <p className="meta-prod d-flex">
-                                                    <a href="#" className="d-flex align-items-center justify-content-center"><span className="flaticon-shopping-bag" /></a>
+                                                   {user === null ? 
+                                                    <a className="d-flex align-items-center justify-content-center"><span onClick={() => { add() }} className="flaticon-shopping-bag" /></a>
+                                                    :
+                                                    <a className="d-flex align-items-center justify-content-center"><span onClick={() => { add(1,user.id, item.idWines) }} className="flaticon-shopping-bag" /></a>
+                                                   }     
                                                     <Link to={`/home/detail/${item.idWines}`} className="d-flex align-items-center justify-content-center"><span className="flaticon-visibility" /></Link>
                                                 </p>
                                             </div>
@@ -134,64 +181,64 @@ function Home() {
                     <div className="row d-flex">
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a href="blog-single.html" className="block-20 img" style={{ backgroundImage: 'url("images/image_1.jpg")' }}>
+                                <a  className="block-20 img" style={{ backgroundImage: 'url("images/image_1.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
                                         <p><span className="fa fa-calendar" /> 23 April 2020</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a href="#">The Recipe from a Winemaker’s Restaurent</a></h3>
+                                    <h3 className="heading mb-3"><a>The Recipe from a Winemaker’s Restaurent</a></h3>
                                     <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a href="#" className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <a  className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a href="blog-single.html" className="block-20 img" style={{ backgroundImage: 'url("images/image_2.jpg")' }}>
+                                <a className="block-20 img" style={{ backgroundImage: 'url("images/image_2.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
                                         <p><span className="fa fa-calendar" /> 23 April 2020</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a href="#">The Recipe from a Winemaker’s Restaurent</a></h3>
+                                    <h3 className="heading mb-3"><a >The Recipe from a Winemaker’s Restaurent</a></h3>
                                     <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a href="#" className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <a  className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a href="blog-single.html" className="block-20 img" style={{ backgroundImage: 'url("images/image_3.jpg")' }}>
+                                <a className="block-20 img" style={{ backgroundImage: 'url("images/image_3.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
                                         <p><span className="fa fa-calendar" /> 23 April 2020</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a href="#">The Recipe from a Winemaker’s Restaurent</a></h3>
+                                    <h3 className="heading mb-3"><a >The Recipe from a Winemaker’s Restaurent</a></h3>
                                     <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a href="#" className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <a className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a href="blog-single.html" className="block-20 img" style={{ backgroundImage: 'url("images/image_4.jpg")' }}>
+                                <a  className="block-20 img" style={{ backgroundImage: 'url("images/image_4.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
                                         <p><span className="fa fa-calendar" /> 23 April 2020</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a href="#">The Recipe from a Winemaker’s Restaurent</a></h3>
+                                    <h3 className="heading mb-3"><a >The Recipe from a Winemaker’s Restaurent</a></h3>
                                     <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a href="#" className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <a className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-        
+
         </div>
 
     )

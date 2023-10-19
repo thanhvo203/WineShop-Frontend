@@ -1,25 +1,202 @@
 import React, { useEffect, useState } from "react";
-import { getAllListWines } from "../service/WinesService";
-import { Link } from "react-router-dom";
+import { addToCart, getAllListWines, getLargestPrice, inforFromToken } from "../service/WinesService";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getList } from "../redux/action";
+import Swal from "sweetalert2";
+import { toast } from 'react-toastify';
+import ReactSlider from "react-slider";
 
-function ListWine() {
-  const [wines, setWines] = useState();
-  let [firstAlcohol,setFirstAlcohol] = useState(0);
-  let [lastAlcohol,setLastAlcohol] = useState(100);
-  let [color,setColor] = useState("");
-  let [flavor,setFlavor] = useState("");
-  let [country,setCountry] = useState("");
-  let [idType,setIdType] = useState("");
+
+function ListWines() {
+ 
+  const navigate = useNavigate();
+  const [wines, setWines] = useState([]);
+  let [firstAlcohol, setFirstAlcohol] = useState(0);
+  let [lastAlcohol, setLastAlcohol] = useState(100);
+  let [color, setColor] = useState("");
+  let [flavor, setFlavor] = useState("");
+  let [country, setCountry] = useState("");
+  let [typeName, setTypeName] = useState("");
+  let [nameWines, setNameWines] = useState("");
+  const [wine,setWine] = useState({});
+  let [minPrice,setMinPrice] = useState(0);
+  let [maxPrice, setMaxprice] = useState();
+  let [page, setPage] = useState(0);
+  // const [searchStatus, setSearchStatus] = useState(false);
+  const [minValue,setMinValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(0);
+ 
+// ----------------------------------Search by price--------------------------------------
+
+  const getMaxPrice = async () => {
+    const data = await getLargestPrice();
+    setWine(data);
+    setMaxprice(data.priceWines)
+  };
+  useEffect(() => {
+    setValues([minPrice, maxPrice]);
+  },[minPrice,maxPrice]);
+  const [values, setValues] = useState({minPrice,maxPrice})
+  
+  const handleCheckPrice =  () => {
+    setMinPrice(values[0]);
+    setMaxprice(values[1]);
+     getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minValue,maxValue)
+     console.log(getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minValue,maxValue))
+ 
+}
+
+//---------------------------------Get User ----------------------------------------------
+
+  const dispatch = useDispatch();
+  const [user, setUser] = useState({});
+  const getUser = async () => {
+    const data = await inforFromToken();
+    setUser(data);
+  }
+// ---------------------------------Search ---------------------------------------
+  const handleAlcohol = (event) => {
+    const data = event.target.getAttribute('data-value');
+    const [value1, value2] = data.split('-')
+    setFirstAlcohol(value1);
+    setLastAlcohol(value2);
+    console.log(value1)
+    console.log(value2);;
+  }
+  const handleColor = (event) => {
+    const data = event.target.getAttribute('data-value')
+    console.log(data);
+    setColor(data);
+  }
+  const handleFlavor = (event) => {
+    const data = event.target.getAttribute('data-value')
+    console.log(data);
+    setFlavor(data);
+  }
+  const handleCountry = (event) => {
+    const data = event.target.getAttribute('data-value')
+    console.log(data);
+    setCountry(data)
+  }
+  const handleTypeName = (event) => {
+    const data = event.target.getAttribute('data-value')
+    console.log(data);
+    setTypeName(data);
+  }
+  const handlenameWines = (event) => {
+    setNameWines(event.target.value)
+  }
+
+  const nextPage = () => {
+    if (page < wines.totalPages) {
+      setPage(page + 1)
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+    }
+  }
+  const previosPage = () => {
+    if (page >= 1) {
+      setPage(page - 1);
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+    }
+  }
+  function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSearch();
+    }
+  }
+  const handleSearch = () => {
+    if (nameWines === "") {
+      Swal.fire({
+        icon: 'error',
+        timer: 2000,
+        title: 'Please enter the wine name you want to search for?'
+      })
+      setColor("")
+      setCountry("")
+        setFirstAlcohol(0)
+        setLastAlcohol(100)
+        setTypeName("")
+        setFlavor("")
+        setNameWines("")
+        setPage(0)
+        setMinPrice(0);
+        setMaxprice(wine.priceWines)
+    } else {
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+    }
+  }
+
+
+
+// --------------------------Add to cart ----------------------------------------
+
+  const add = async (quantity, idCustomer, idWines) => {
+    console.log(quantity, idCustomer, idWines);
+    try {
+      if (user === null) {
+        Swal.fire({
+          icon: 'warning',
+          timer: 2000,
+          title: 'Please log in before performing this action',
+          showConfirmButton: true,
+          showCancelButton: true,
+          confirmButtonText: "Go to Log in"
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            navigate("/login")
+          }
+        })
+      } else {
+        await addToCart(quantity, user.id, idWines)
+        dispatch(getList(user.id))
+        toast.success("Add success", {
+          autoClose: 500
+        })
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 
 
   const getListWine = async () => {
-    const data = await getAllListWines(firstAlcohol,lastAlcohol,color,flavor,country,idType);
-    console.log(data)
-    setWines(data);
+    try {
+      const data = await getAllListWines(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice);
+      console.log(data)
+      setWines(data);
+    } catch (error) {
+      Swal.fire({
+        timer: 2000,
+        title: 'Not found data',
+        icon: 'error'
+      }).then(() => {
+        setColor("")
+        setCountry("")
+        setFirstAlcohol(0)
+        setLastAlcohol(100)
+        setTypeName("")
+        setFlavor("")
+        setNameWines("")
+        setPage(0)
+        setMinPrice(0);
+        setMaxprice(wine.priceWines)
+      
+      })
+      
+    }
+
   }
-  useEffect(() => {
-    getListWine(firstAlcohol,lastAlcohol,color,flavor,country,idType)
-  }, [firstAlcohol,lastAlcohol,color,flavor,country,idType])
+  useEffect(() => { 
+    getUser()
+  if ( wine.priceWines != undefined) {
+     getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+  } else {
+     getMaxPrice()
+  }
+  }, [page, firstAlcohol, lastAlcohol, color, flavor, country, typeName,minPrice,maxPrice])
   if (!wines) {
     return null;
   }
@@ -32,119 +209,127 @@ function ListWine() {
           <div className="row">
             <div className="col-md-9">
               <div style={{ fontSize: '18px' }}>Filter
-                <span style={{marginLeft:'332px'}}>Search</span>
+                <span style={{ marginLeft: '323px' }}>Search</span>
               </div>
               <div className="row mb-4">
-                <div class="dropdown" style={{ marginLeft: '15px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div className="dropdown" style={{ marginLeft: '15px' }}>
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Alcohol
                   </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item">35-40</a></li>
-                    <li><a class="dropdown-item">40-50</a></li>
-                    <li><a class="dropdown-item"> <i class="fa-solid fa-greater-than"></i>50 </a></li>
+                  <ul className="dropdown-menu" onClick={handleAlcohol}>
+                    <li><a className="dropdown-item" data-value="35-40" >35-40</a></li>
+                    <li><a className="dropdown-item" data-value="40-50">40-50</a></li>
+                    <li><a className="dropdown-item" data-value="50-100"> <i className="fa-solid fa-greater-than"></i>50 </a></li>
                   </ul>
                 </div>
-                <div class="dropdown" style={{ marginLeft: '5px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div className="dropdown" style={{ marginLeft: '5px' }}>
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Color
                   </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item">Dark Brown</a></li>
-                    <li><a class="dropdown-item">Caramel</a></li>
-                    <li><a class="dropdown-item">Light Yellow</a></li>
-                    <li><a class="dropdown-item">Amber</a></li>
-                    <li><a class="dropdown-item">Bright</a></li>
-                    <li><a class="dropdown-item">Dark</a></li>
-                    <li><a class="dropdown-item">Natural</a></li>
-                    <li><a class="dropdown-item">Honey yellow</a></li>
-                    <li><a class="dropdown-item">Bright yellow</a></li>
+                  <ul className="dropdown-menu" onClick={handleColor}>
+                    <li><a className="dropdown-item" data-value="Dark Brown">Dark Brown</a></li>
+                    <li><a className="dropdown-item" data-value="Caramel">Caramel</a></li>
+                    <li><a className="dropdown-item" data-value="Light Yellow">Light Yellow</a></li>
+                    <li><a className="dropdown-item" data-value="Amber">Amber</a></li>
+                    <li><a className="dropdown-item" data-value="Bright">Bright</a></li>
+                    <li><a className="dropdown-item" data-value="Dark">Dark</a></li>
+                    <li><a className="dropdown-item" data-value="Natural">Natural</a></li>
+                    <li><a className="dropdown-item" data-value="Honey yellow">Honey yellow</a></li>
+                    <li><a className="dropdown-item" data-value="Bright yellow">Bright yellow</a></li>
                   </ul>
                 </div>
-       
-                <div class="dropdown" style={{ marginLeft: '5px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+                <div className="dropdown" style={{ marginLeft: '5px' }}>
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Flavor
                   </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <div class="row">
-                      <div class="col-md-6" style={{paddingLeft:"0px"}}>
-                        <a class="dropdown-item">Rich</a>
-                        <a class="dropdown-item">Spicy</a>
-                        <a class="dropdown-item">Bitter</a>
-                        <a class="dropdown-item">Sweet</a>
-                        <a class="dropdown-item">Orange</a>
-                        <a class="dropdown-item">Vani</a>
-                        <a class="dropdown-item">Green Apple</a>
+                  <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <div className="row" onClick={handleFlavor}>
+                      <div className="col-md-6" style={{ paddingLeft: "0px" }} >
+                        <a className="dropdown-item" data-value="Rich" >Rich</a>
+                        <a className="dropdown-item" data-value="Spicy">Spicy</a>
+                        <a className="dropdown-item" data-value="Bitter">Bitter</a>
+                        <a className="dropdown-item" data-value="Sweet" >Sweet</a>
+                        <a className="dropdown-item" data-value="Orange">Orange</a>
+                        <a className="dropdown-item" data-value="Vani" >Vani</a>
+                        <a className="dropdown-item" data-value="Green Apple">Green Apple</a>
                       </div>
-                      <div class="col-md-6" style={{marginLeft: '-41px'}}>
-                        <a class="dropdown-item">Oak</a>
-                        <a class="dropdown-item">Dried Fruit</a>
-                        <a class="dropdown-item">Pears</a>
-                        <a class="dropdown-item">Peaches</a>
-                        <a class="dropdown-item">Chocolate</a>
-                        <a class="dropdown-item">Cinamon</a>
-                        
+                      <div className="col-md-6" style={{ marginLeft: '-41px' }}>
+                        <a className="dropdown-item" data-value="Oak">Oak</a>
+                        <a className="dropdown-item" data-value="Dried Fruit">Dried Fruit</a>
+                        <a className="dropdown-item" data-value="Pears" >Pears</a>
+                        <a className="dropdown-item" data-value="Peaches" >Peaches</a>
+                        <a className="dropdown-item" data-value="Chocolate">Chocolate</a>
+                        <a className="dropdown-item" data-value="Cinamon">Cinamon</a>
+
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="dropdown" style={{ marginLeft: '5px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div className="dropdown" style={{ marginLeft: '5px' }}>
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Country
                   </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item">Scotland</a></li>
-                    <li><a class="dropdown-item">Indian</a></li>
-                    <li><a class="dropdown-item">France</a></li>
-                    <li><a class="dropdown-item">Germany</a></li>
-                    <li><a class="dropdown-item">Hamilton</a></li>
-                    <li><a class="dropdown-item">Kentucky</a></li>
-                    <li><a class="dropdown-item">American</a></li>
-                    <li><a class="dropdown-item">Ireland</a></li>
-                    <li><a class="dropdown-item">Jamaica</a></li>
+                  <ul className="dropdown-menu" onClick={handleCountry}>
+                    <li><a className="dropdown-item" data-value="Scotland">Scotland</a></li>
+                    <li><a className="dropdown-item" data-value="Indian">Indian</a></li>
+                    <li><a className="dropdown-item" data-value="France">France</a></li>
+                    <li><a className="dropdown-item" data-value="Germany">Germany</a></li>
+                    <li><a className="dropdown-item" data-value="Hamiltion">Hamilton</a></li>
+                    <li><a className="dropdown-item" data-value="Kentucky">Kentucky</a></li>
+                    <li><a className="dropdown-item" data-value="American">American</a></li>
+                    <li><a className="dropdown-item" data-value="Ireland">Ireland</a></li>
+                    <li><a className="dropdown-item" data-value="Jamaica">Jamaica</a></li>
 
                   </ul>
                 </div>
                 <div style={{ marginLeft: '10px' }}>
-                  <input placeholder="Search by name wine" style={{ width: '332px', height: '37px', borderRadius: '4px' }}></input>
-                  <button type="button" style={{ marginLeft: '7px', height: '37px', width: '77px', borderRadius: '4px', backgroundColor: '#b7472a', color: 'white' }}>Search</button>
+                  <input placeholder="Search by name wine" onKeyDown={handleKeyPress} onChange={handlenameWines} id="searchInput" style={{ width: '332px', height: '37px', borderRadius: '4px' }}></input>
+                  <button type="button" onClick={handleSearch} style={{ marginLeft: '7px', height: '37px', width: '77px', borderRadius: '4px', backgroundColor: '#b7472a', color: 'white' }}>Search</button>
                 </div>
 
               </div>
               <div className="row">
-                {wines.content && wines.content.length  !==0 ? 
-                 wines.content.map((item, index) => {
-                  return (
-                    <div className="col-md-4 d-flex" key={item.idWines}>
-                      <div className="product ftco-animate">
-                        <div className="img d-flex align-items-center justify-content-center" style={{ backgroundImage: `url(/${item.imageWines})` }}>
+                {wines.content && wines.content.length !== 0 ?
+                  wines.content.map((item, index) => {
+                    return (
+                      <div className="col-md-4 d-flex" key={item.idWines}>
+                        <div className="product ftco-animate">
+                          <div className="img d-flex align-items-center justify-content-center" style={{ backgroundImage: `url(/${item.imageWines})` }}>
 
-                          <div className="desc">
-                            <p className="meta-prod d-flex">
-                              <a
-                              
-                                className="d-flex align-items-center justify-content-center"
-                              >
-                                <span className="flaticon-shopping-bag" />
-                              </a>
-                              <Link to={`/home/detail/${item.idWines}`} className="d-flex align-items-center justify-content-center"><span className="flaticon-visibility" /></Link>
+                            <div className="desc">
+                              <p className="meta-prod d-flex">
+                                {user === null ?
+                                  <>
+                                    <a className="d-flex align-items-center justify-content-center">
+                                      <span onClick={() => { add() }} className="flaticon-shopping-bag" />
+                                    </a>
+                                  </>
+                                  :
+                                  <>
+                                    <a className="d-flex align-items-center justify-content-center">
+                                      <span onClick={() => { add(1, user.id, item.idWines) }} className="flaticon-shopping-bag" />
+                                    </a>
+                                  </>
+                                }
+
+                                <Link to={`/home/detail/${item.idWines}`} className="d-flex align-items-center justify-content-center"><span className="flaticon-visibility" /></Link>
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text text-center">
+                            <span className="category">{item.typeWines.nameTypeWines}</span>
+                            <h2>{item.nameWines}</h2>
+                            <p className="mb-0">
+                              <span className="price">${item.priceWines}.00</span>
                             </p>
                           </div>
                         </div>
-                        <div className="text text-center">
-                          <span className="category">{item.typeWines.nameTypeWines}</span>
-                          <h2>{item.nameWines}</h2>
-                          <p className="mb-0">
-                            <span className="price">${item.priceWines}.00</span>
-                          </p>
-                        </div>
                       </div>
-                    </div>
-                  )
-                }) : 
+                    )
+                  }) :
                   <div>
-                     <p>Data not found</p>
+                    <p>Data not found</p>
                   </div>
                 }
 
@@ -153,17 +338,13 @@ function ListWine() {
                 <div className="col text-center">
                   <div className="block-27">
                     <ul>
-                      <li>
+                      <li onClick={previosPage}>
                         <a>&lt;</a>
                       </li>
-                      <li className="active">
-                        <span>1</span>
-                      </li>
                       <li>
-                        <a>2</a>
+                        <span>{page + 1}/{wines.totalPages}</span>
                       </li>
-
-                      <li>
+                      <li onClick={nextPage}>
                         <a>&gt;</a>
                       </li>
                     </ul>
@@ -175,39 +356,54 @@ function ListWine() {
               <div className="sidebar-box ftco-animate">
                 <div className="categories">
                   <h3>Product Types</h3>
-                  <ul className="p-0">
+                  <ul className="p-0" onClick={handleTypeName}>
                     <li>
-                      <a value="1">
+                      <a data-value="Brandy">
                         Brandy <span className="fa fa-chevron-right" />
                       </a>
                     </li>
                     <li>
-                      <a value="2">
+                      <a data-value="Gin">
                         Gin <span className="fa fa-chevron-right" />
                       </a>
                     </li>
                     <li>
-                      <a value="2">
+                      <a data-value="Rum">
                         Rum <span className="fa fa-chevron-right" />
                       </a>
                     </li>
                     <li>
-                      <a>
+                      <a data-value="Tequila">
                         Tequila <span className="fa fa-chevron-right" />
                       </a>
                     </li>
                     <li>
-                      <a>
+                      <a data-value="Vodka">
                         Vodka <span className="fa fa-chevron-right" />
                       </a>
                     </li>
                     <li>
-                      <a>
-                        Whiskey <span className="fa fa-chevron-right" />
+                      <a data-value="Whisky">
+                        Whisky <span className="fa fa-chevron-right" />
                       </a>
                     </li>
                   </ul>
                 </div>
+              </div>
+              <div className="sidebar-box ftco-animate">
+                <div className="">
+                  <h3>Price Range</h3>
+                  <div className={"value"}>${values[0]} - ${values[1]}</div>
+                  <ReactSlider className={"slider"} onChange={setValues} value={values} min={minPrice} max={maxPrice}/>
+                </div>
+                <button className="btn btn-primary" style={{
+                  marginTop: '27px',
+                  marginLeft: '51px',
+                  height: '38px',
+                  width: '144px'
+                }} onClick={handleCheckPrice}>
+                  Check
+                </button>
               </div>
               <div className="sidebar-box ftco-animate">
                 <h3>Recent Blog</h3>
@@ -299,4 +495,4 @@ function ListWine() {
 
   )
 }
-export default ListWine;
+export default ListWines;
