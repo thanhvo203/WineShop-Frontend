@@ -15,7 +15,7 @@ export async function getLargestPrice() {
     return resolve.data;
 }
 
-export async function getAllListWines(page,firstAlcohol,lastAlcohol,color,flavor,country,nameType,nameWines,minPrice,maxPrice) {
+export async function getAllListWines(page, firstAlcohol, lastAlcohol, color, flavor, country, nameType, nameWines, minPrice, maxPrice) {
     const resolve = await axios.get(`http://localhost:8080/wines/products?page=${page}&&firstAlcohol=${firstAlcohol}&&lastAlcohol=${lastAlcohol}&&color=${color}&&flavor=${flavor}&&country=${country}&&nameType=${nameType}&&nameWines=${nameWines}&&minPrice=${minPrice}&&maxPrice=${maxPrice}`)
     return resolve.data;
 }
@@ -27,14 +27,14 @@ export async function loginByEmailAndPassword(request) {
     try {
         const resolve = await axios.post(`http://localhost:8080/wines/api/v1/auth/authenticate`, request)
         return resolve.data;
-    } catch(error) {
+    } catch (error) {
         Swal.fire({
-            icon:'error',
-            timer:2000,
-            title:'Email or Password incorrect'
+            icon: 'error',
+            timer: 2000,
+            title: 'Email or Password incorrect'
         })
     }
- 
+
 
 }
 
@@ -54,16 +54,31 @@ export async function listCart(id) {
     const resolve = await axios.get(`http://localhost:8080/wines/cart/list/${id}`)
     return resolve.data;
 }
-export async function addToCart(quantity,idCustomer,idWines) {
+export async function addToCart(quantity, idCustomer, idWines) {
     const resolve = await axios.post(`http://localhost:8080/wines/cart/add/${quantity}/${idCustomer}/${idWines}`)
     return resolve.data;
 }
-export async function deleteFromCart(idWines,idCustomer) {
+export async function deleteFromCart(idWines, idCustomer) {
     const resolve = await axios.delete(`http://localhost:8080/wines/cart/delete/${idWines}?idCustomer=${idCustomer}`)
     return resolve.data;
 }
-export async function updateCart(idCart,newQuantity,idWines,idCustomer) {
+export async function updateCart(idCart, newQuantity, idWines, idCustomer) {
     const resolve = await axios.patch(`http://localhost:8080/wines/cart/update/${idCart}?newQuantity=${newQuantity}&&idWines=${idWines}&&idCustomer=${idCustomer}`)
-   return resolve.data;
-}   
-
+    return resolve.data;
+}
+export async function addOrder(idCustomer, totalPrice) {
+    const resolve = await axios.post(`http://localhost:8080/wines/order/add?idCustomer=${idCustomer}&&totalPrice=${totalPrice}`)
+    return resolve.data;
+}
+export async function addOrderDetail(currentPrice, quality, idOrder, idWines) {
+    const resolve = await axios.post(`http://localhost:8080/wines/order-detail/add?currentPrice=${currentPrice}&&quality=${quality}&&idOrder=${idOrder}&&idWines=${idWines}`)
+    return resolve.data;
+}
+export async function updateQuantityWines(newQuantity, idWines) {
+    const resolve = await axios.patch(`http://localhost:8080/wines/update-quantity?newQuantity=${newQuantity}&&idWines=${idWines}`)
+    return resolve.data;
+}
+export async function getListHistory(idCustomer, page, startDate, endDate) {
+    const resolve = await axios.get(`http://localhost:8080/wines/order/history/${idCustomer}?page=${page}&&startDate=${startDate}&&endDate=${endDate}`)
+    return resolve.data;
+}

@@ -9,7 +9,7 @@ import ReactSlider from "react-slider";
 
 
 function ListWines() {
- 
+
   const navigate = useNavigate();
   const [wines, setWines] = useState([]);
   let [firstAlcohol, setFirstAlcohol] = useState(0);
@@ -19,15 +19,13 @@ function ListWines() {
   let [country, setCountry] = useState("");
   let [typeName, setTypeName] = useState("");
   let [nameWines, setNameWines] = useState("");
-  const [wine,setWine] = useState({});
-  let [minPrice,setMinPrice] = useState(0);
+  const [wine, setWine] = useState({});
+  let [minPrice, setMinPrice] = useState(0);
   let [maxPrice, setMaxprice] = useState();
   let [page, setPage] = useState(0);
-  // const [searchStatus, setSearchStatus] = useState(false);
-  const [minValue,setMinValue] = useState(0);
-  const [maxValue, setMaxValue] = useState(0);
- 
-// ----------------------------------Search by price--------------------------------------
+
+
+  // ----------------------------------Search by price--------------------------------------
 
   const getMaxPrice = async () => {
     const data = await getLargestPrice();
@@ -36,18 +34,16 @@ function ListWines() {
   };
   useEffect(() => {
     setValues([minPrice, maxPrice]);
-  },[minPrice,maxPrice]);
-  const [values, setValues] = useState({minPrice,maxPrice})
-  
-  const handleCheckPrice =  () => {
-    setMinPrice(values[0]);
-    setMaxprice(values[1]);
-     getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minValue,maxValue)
-     console.log(getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minValue,maxValue))
- 
-}
+  }, [minPrice, maxPrice]);
+  const [values, setValues] = useState({ minPrice, maxPrice })
 
-//---------------------------------Get User ----------------------------------------------
+
+  const handleCheckPrice = (min ,max) => {
+    getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, min, max)
+
+  }
+
+  //---------------------------------Get User ----------------------------------------------
 
   const dispatch = useDispatch();
   const [user, setUser] = useState({});
@@ -55,33 +51,27 @@ function ListWines() {
     const data = await inforFromToken();
     setUser(data);
   }
-// ---------------------------------Search ---------------------------------------
+  // ---------------------------------Search ---------------------------------------
   const handleAlcohol = (event) => {
     const data = event.target.getAttribute('data-value');
     const [value1, value2] = data.split('-')
     setFirstAlcohol(value1);
     setLastAlcohol(value2);
-    console.log(value1)
-    console.log(value2);;
   }
   const handleColor = (event) => {
     const data = event.target.getAttribute('data-value')
-    console.log(data);
     setColor(data);
   }
   const handleFlavor = (event) => {
     const data = event.target.getAttribute('data-value')
-    console.log(data);
     setFlavor(data);
   }
   const handleCountry = (event) => {
     const data = event.target.getAttribute('data-value')
-    console.log(data);
     setCountry(data)
   }
   const handleTypeName = (event) => {
     const data = event.target.getAttribute('data-value')
-    console.log(data);
     setTypeName(data);
   }
   const handlenameWines = (event) => {
@@ -91,13 +81,13 @@ function ListWines() {
   const nextPage = () => {
     if (page < wines.totalPages) {
       setPage(page + 1)
-      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, minPrice, maxPrice)
     }
   }
   const previosPage = () => {
     if (page >= 1) {
       setPage(page - 1);
-      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, minPrice, maxPrice)
     }
   }
   function handleKeyPress(event) {
@@ -115,22 +105,22 @@ function ListWines() {
       })
       setColor("")
       setCountry("")
-        setFirstAlcohol(0)
-        setLastAlcohol(100)
-        setTypeName("")
-        setFlavor("")
-        setNameWines("")
-        setPage(0)
-        setMinPrice(0);
-        setMaxprice(wine.priceWines)
+      setFirstAlcohol(0)
+      setLastAlcohol(100)
+      setTypeName("")
+      setFlavor("")
+      setNameWines("")
+      setPage(0)
+      setMinPrice(0);
+      setMaxprice(wine.priceWines)
     } else {
-      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, minPrice, maxPrice)
     }
   }
 
 
 
-// --------------------------Add to cart ----------------------------------------
+  // --------------------------Add to cart ----------------------------------------
 
   const add = async (quantity, idCustomer, idWines) => {
     console.log(quantity, idCustomer, idWines);
@@ -162,9 +152,9 @@ function ListWines() {
 
 
 
-  const getListWine = async () => {
+  const getListWine = async (page1, firstAlcohol1, lastAlcohol1, color1, flavor1, country1, typeName1, nameWines1, minPrice1, maxPrice1) => {
     try {
-      const data = await getAllListWines(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice);
+      const data = await getAllListWines(page1, firstAlcohol1, lastAlcohol1, color1, flavor1, country1, typeName1, nameWines1, minPrice1, maxPrice1);
       console.log(data)
       setWines(data);
     } catch (error) {
@@ -183,20 +173,20 @@ function ListWines() {
         setPage(0)
         setMinPrice(0);
         setMaxprice(wine.priceWines)
-      
+
       })
-      
+
     }
 
   }
-  useEffect(() => { 
+  useEffect(() => {
     getUser()
-  if ( wine.priceWines != undefined) {
-     getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines,minPrice,maxPrice)
-  } else {
-     getMaxPrice()
-  }
-  }, [page, firstAlcohol, lastAlcohol, color, flavor, country, typeName,minPrice,maxPrice])
+    if (wine.priceWines != undefined) {
+      getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, minPrice, maxPrice)
+    } else {
+      getMaxPrice()
+    }
+  }, [page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, minPrice, maxPrice])
   if (!wines) {
     return null;
   }
@@ -307,9 +297,14 @@ function ListWines() {
                                   </>
                                   :
                                   <>
-                                    <a className="d-flex align-items-center justify-content-center">
+                                    {item.quantity === 0 ? 
+                                      <></>
+                                      :
+                                      <a className="d-flex align-items-center justify-content-center">
                                       <span onClick={() => { add(1, user.id, item.idWines) }} className="flaticon-shopping-bag" />
                                     </a>
+                                    }
+                                    
                                   </>
                                 }
 
@@ -394,14 +389,14 @@ function ListWines() {
                 <div className="">
                   <h3>Price Range</h3>
                   <div className={"value"}>${values[0]} - ${values[1]}</div>
-                  <ReactSlider className={"slider"} onChange={setValues} value={values} min={minPrice} max={maxPrice}/>
+                  <ReactSlider className={"slider"} onChange={setValues} value={values} min={minPrice} max={maxPrice} />
                 </div>
                 <button className="btn btn-primary" style={{
                   marginTop: '27px',
                   marginLeft: '51px',
                   height: '38px',
                   width: '144px'
-                }} onClick={handleCheckPrice}>
+                }} onClick={() => {handleCheckPrice(values[0],values[1])}}>
                   Check
                 </button>
               </div>

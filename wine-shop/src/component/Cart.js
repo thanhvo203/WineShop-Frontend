@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { deleteFromCart, getCustomerByIdAccount, listCart, updateCart } from "../service/WinesService";
+import { addOrder, addOrderDetail, deleteFromCart, getCustomerByIdAccount, listCart, updateCart, updateQuantityWines } from "../service/WinesService";
 import Swal from "sweetalert2";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -8,17 +8,20 @@ import { getList } from "../redux/action";
 function Cart() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
+    
     const { id } = useParams();
     const [carts, setCarts] = useState([]);
     const [customer, setCustomer] = useState({});
-    let total = 0;
-    carts.forEach(item => {
+    const [itemCarts, setItemCarts] = useState([]);
+    let [total,setTotal] = useState(0);
+
+    let stateButton = 0
+    itemCarts.forEach((item) => {
         total += item.wines.priceWines * item.quality;
     });
 
-    const minusQuantity = async (idCart,quality, idWines, idCustomer) => {
-        if(quality <= 1) {
+    const minusQuantity = async (idCart, quality, idWines, idCustomer) => {
+        if (quality <= 1) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Do you wanna delete this item out of your cart',
@@ -28,43 +31,52 @@ function Cart() {
                 cancelButtonText: 'NO',
                 reverseButtons: true
             }).then(async (result) => {
-                if(result.isConfirmed) {
+                if (result.isConfirmed) {
                     try {
-                        await deleteFromCart(idWines,idCustomer);
+                        await deleteFromCart(idWines, idCustomer);
                         setCarts(await listCart(idCustomer));
                         dispatch(getList(customer.idCustomer));
-                       
+
                         Swal.fire({
-                            icon:'success',
-                            timer:2000,
-                            title:'Delete Success'
+                            icon: 'success',
+                            timer: 2000,
+                            title: 'Delete Success'
                         })
                         navigate("/home/cart/" + id)
-                    }catch {
+                    } catch {
                         Swal.fire({
                             icon: 'warning',
-                            title: 'Xóa thất bại!',
+                            title: 'Delete Success!',
                             showConfirmButton: false,
                             timer: 1500
                         })
                     }
                 }
             })
-        }else{
+        } else {
             await updateCart(idCart, quality - 1, idWines, idCustomer)
-            console.log(idCart,quality-1,idWines,idCustomer);
             dispatch(getList(customer.idCustomer))
             setCarts(await listCart(customer.idCustomer));
+            itemCarts.forEach((item) => {
+                if(item.wines.idWines === idWines) {
+                    setTotal((prev) => prev - (1 * item.wines.priceWines));
+                }
+            });
         }
-        
+
     }
-    const plusQuantity = async (idCart,quality, idWines, idCustomer)=> {
+    const plusQuantity = async (idCart, quality, idWines, idCustomer) => {
         await updateCart(idCart, quality + 1, idWines, idCustomer)
-        console.log(idCart,quality+1,idWines,idCustomer);
         dispatch(getList(customer.idCustomer))
         setCarts(await listCart(customer.idCustomer));
+        itemCarts.forEach((item) => {
+            if(item.wines.idWines === idWines) {
+                setTotal((prev) => prev + (1 * item.wines.priceWines));
+            }
+        });
+
     }
-    const handleDeleteItem = async (idWines,idCustomer) => {
+    const handleDeleteItem = async (idWines, idCustomer) => {
         Swal.fire({
             icon: 'warning',
             title: 'Do you wanna delete this item out of your cart',
@@ -74,22 +86,22 @@ function Cart() {
             cancelButtonText: 'NO',
             reverseButtons: true
         }).then(async (result) => {
-            if(result.isConfirmed) {
+            if (result.isConfirmed) {
                 try {
-                    await deleteFromCart(idWines,idCustomer);
+                    await deleteFromCart(idWines, idCustomer);
                     setCarts(await listCart(idCustomer));
                     dispatch(getList(customer.idCustomer));
-                   
+
                     Swal.fire({
-                        icon:'success',
-                        timer:2000,
-                        title:'Delete Success'
+                        icon: 'success',
+                        timer: 2000,
+                        title: 'Delete Success'
                     })
                     navigate("/home/cart/" + id)
-                }catch {
+                } catch {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Xóa thất bại!',
+                        title: 'Delete Failed!',
                         showConfirmButton: false,
                         timer: 1500
                     })
@@ -97,8 +109,7 @@ function Cart() {
             }
         })
     }
-
-
+    console.log(itemCarts);
     const getCustomer = async () => {
         try {
             const data = await getCustomerByIdAccount(id);
@@ -107,8 +118,6 @@ function Cart() {
             console.log(error);
         }
     }
-
-
     const getListWines = async () => {
         try {
             const data = await listCart(id);
@@ -125,9 +134,126 @@ function Cart() {
         }
     };
     const location = useLocation();
+    // ---------------------Payment------------------
+    const handleChooseItem = (item) => {
+        if (itemCarts.includes(item)) {
+            const updatedItemCarts = itemCarts.filter((cartItem) => cartItem !== item);
+            setItemCarts(updatedItemCarts);
+        } else {
+            setItemCarts((prevItemCarts) => [...prevItemCarts, item]);
+        }
+    }
+    const renderPaypalButton = (itemCarts) => {
+        const createOrder = (data, actions) => {
+            try {
+                const totalAmount = document.getElementById("totalAmount").innerText;
+                console.log(totalAmount);
+                return actions.order.create({
+                    purchase_units: [
+                        {
+                            amount: {
+                                currency_code: "USD",
+                                value: totalAmount
+                            },
+                        },
+                    ],
+                });
+            } catch (error) {
+                console.error("Error creating order:", error);
+                throw error;
+            }
+        };
 
+        window.paypal
+            .Buttons({
+                style: {
+                    color: "gold",
+                    layout: "vertical",
+                    shape: "rect",
+                    label: "pay",
+                    height: 40,
+                    marginLeft: 400,
+                },
+                createOrder: createOrder,
+                onApprove: async (data, actions) => {
+                    let isQuantityValid = true;
 
-    console.log(carts);
+                    itemCarts.forEach((item) => {
+                      if (item.quality > item.wines.quantity) {
+                        isQuantityValid = false;
+                        Swal.fire({
+                          icon: 'error',
+                          timer: 3000,
+                          title: 'Quantity of ' + item.wines.nameWines + ' not enough to continue this action'
+                        });
+                      }
+                    });
+                  
+                    if (!isQuantityValid) {
+                      navigate("/home/cart/" + id);
+                      return;
+                    }
+                    const order = await actions.order.capture();
+                    const dataOrder = await addOrder(customer.idCustomer, total);
+                    itemCarts.forEach((item) => {
+                        console.log(item.wines.priceWines * item.quality);
+                        addOrderDetail((item.wines.priceWines * item.quality), item.quality, dataOrder.idOrder, item.wines.idWines)
+                        deleteFromCart(item.wines.idWines, customer.idCustomer);
+                        updateQuantityWines(item.quality,item.wines.idWines);
+                        dispatch(getList(customer.idCustomer));
+                        
+                    });
+
+                    if (
+                        order.status === "COMPLETED" ||
+                        order.status === 200
+                    ) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Payment success",
+                            timer: 3000,
+                        });
+                        navigate("/home");
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Payment Failed",
+                            timer: 3000,
+                        });
+                        navigate("/home");
+                    }
+                },
+            })
+            .render("#paypal-button-container");
+    };
+
+    const handlePayment = () => {
+        Swal.fire({
+            icon: "warning",
+            text: "Are you sure to check out ?",
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonColor: "#ffc439",
+            cancelButtonColor: "grey",
+            confirmButtonText: "Yes",
+            cancelButtonText: "Not yet",
+        }).then((result) => {
+            if (result && result.value) {
+                if (stateButton === 0) {
+                    renderPaypalButton(itemCarts);
+                    console.log(itemCarts);
+                    stateButton++;
+
+                    const kiemTraButton = document.querySelector(
+                        "#paypal-button-container button"
+                    );
+                    kiemTraButton.style.display = "none";
+                }
+            }
+        });
+    };
+    //---------------------------------------------
+
     useEffect(() => {
         getCustomer();
         getListWines();
@@ -153,13 +279,13 @@ function Cart() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {carts.length != 0 ?
+                                    {carts.length !== 0 ?
                                         carts.map((item, index) => {
                                             return (
                                                 <tr className="alert" role="alert" key={item.idCart}>
                                                     <td>
                                                         <label className="checkbox-wrap checkbox-primary">
-                                                            <input type="checkbox" defaultChecked="" />
+                                                            <input onClick={() => { handleChooseItem(item) }} type="checkbox" defaultChecked="" />
                                                             <span className="checkmark" />
                                                         </label>
                                                     </td>
@@ -179,7 +305,7 @@ function Cart() {
                                                     <td>
                                                         <div className="d-flex align-items-center">
                                                             <button
-                                                                onClick={() => { minusQuantity(item.idCart,item.quality, item.wines.idWines, customer.idCustomer) }}
+                                                                onClick={() => { minusQuantity(item.idCart, item.quality, item.wines.idWines, customer.idCustomer) }}
                                                                 type="button"
                                                                 className="col-4 quantity-left-minus btn"
                                                                 data-type="minus"
@@ -193,7 +319,7 @@ function Cart() {
                                                                 value={item.quality}
                                                             />
                                                             <button
-                                                                onClick={() => { plusQuantity( item.idCart,item.quality, item.wines.idWines, customer.idCustomer) }}
+                                                                onClick={() => { plusQuantity(item.idCart, item.quality, item.wines.idWines, customer.idCustomer) }}
                                                                 type="button"
                                                                 className="col-4 quantity-right-plus btn"
                                                                 data-type="plus"
@@ -206,10 +332,10 @@ function Cart() {
                                                     <td>${item.wines.priceWines * item.quality}</td>
                                                     <td>
                                                         <button
-                                                            onClick={() => { handleDeleteItem(item.wines.idWines,customer.idCustomer) }}
+                                                            onClick={() => { handleDeleteItem(item.wines.idWines, customer.idCustomer) }}
                                                             type="button"
                                                             className="close"
-                                            
+
                                                         >
                                                             <span aria-hidden="true">
                                                                 <i className="fa fa-close" />
@@ -267,12 +393,18 @@ function Cart() {
                                     <hr />
                                     <p className="d-flex total-price">
                                         <span>Total</span>
-                                        <span>${total.toFixed(2)}</span>
+                                        <span style={{ textAlign: 'end', fontWeight: '600', color: 'black' }}>$</span><span id="totalAmount">{total}.00</span>
                                     </p>
                                 </div>
-                                <button className="text-center" >
-                                    <a className="btn btn-primary py-3 px-4">Proceed to Checkout</a>
-                                </button>
+                                <div id="paypal-button-container">
+                                    <button style={{ width: '100%', border: '1px' }}
+                                        onClick={() => handlePayment()}
+                                        className=" btn btn-primary py-3 px-4 text-center"
+                                    >
+                                        Proceed to Checkout
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
                     </div>

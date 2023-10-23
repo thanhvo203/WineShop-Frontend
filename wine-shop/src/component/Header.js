@@ -104,6 +104,7 @@ function Header() {
                   <div className="dropdown-menu" aria-labelledby="dropdown04">
                     <Link to={`/home/wines`} className="dropdown-item">All Wines</Link>
                     <Link to={`/home/cart/${user.id}`} className="dropdown-item">Cart</Link>
+                    <Link to={`/home/history/${user.id}`} className="dropdown-item">History</Link>
                   </div>
                 </li>
                 <li className="nav-item"><a className="nav-link">{user.users}</a></li>

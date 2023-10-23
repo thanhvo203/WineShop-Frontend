@@ -74,11 +74,12 @@ function Home() {
                         </div>
                         <div className="col-md-6 wrap-about pl-md-5 ftco-animate py-5">
                             <div className="heading-section">
-                                <span className="subheading">Since 1905</span>
-                                <h2 className="mb-4">Desire Meets A New Taste</h2>
-                                <p>A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth.</p>
-                                <p>On her way she met a copy. The copy warned the Little Blind Text, that where it came from it would have been rewritten a thousand times and everything that was left from its origin would be the word "and" and the Little Blind Text should turn around and return to its own, safe country.</p>
-
+                                <span className="subheading">History</span>
+                                <h2 className="mb-4">History of strong liquor</h2>
+                                <p>1.Liquor in ancient times: Liquor has been produced and consumed since ancient times, perhaps thousands of years before the Common Era. Civilizations such as Ancient Egypt and Ancient China had forms of liquor usage. Liquor during this period was often made from ingredients such as barley, grapes, honey, fruits, and other plants.</p>
+                                <p>2.Middle Ages and Strong Liquor: During the Middle Ages, the art of distilling strong liquor developed. Several European countries such as Ancient Ireland, Wales, Scotland, and France developed the technology of distilling liquor from barley or grapes. Strong liquor made from barley was called whisky, while strong liquor made from grapes was called wine.</p>
+                                 <p>3.Industrial Revolution and Industrial Strong Liquor: In the 18th and 19th centuries, distilling technology made significant advancements. Industrial distillation processes and essence-making procedures were applied, creating strong liquor of consistent quality and easier consumption. Countries such as England, the United States, and France became centers of strong liquor production and consumption.</p>
+                                 <p>4.20th Century to Present: In the 20th century, strong liquor production technology continued to advance, with the development of fermentation, distillation, and aging processes. Strong liquors such as vodka, rum, gin, tequila, and bourbon became popular worldwide. Today, strong liquor is produced and consumed globally and plays a significant role in culture, art, and cuisine.</p>
                             </div>
                         </div>
                     </div>
@@ -144,9 +145,15 @@ function Home() {
                                             <div className="desc">
                                                 <p className="meta-prod d-flex">
                                                    {user === null ? 
+                                                    <>
                                                     <a className="d-flex align-items-center justify-content-center"><span onClick={() => { add() }} className="flaticon-shopping-bag" /></a>
+                                                    </>
                                                     :
+                                                    <>
+                                                    {wines.quantity === 0 ? <></>:
                                                     <a className="d-flex align-items-center justify-content-center"><span onClick={() => { add(1,user.id, item.idWines) }} className="flaticon-shopping-bag" /></a>
+                                                     }                                   
+                                                    </>
                                                    }     
                                                     <Link to={`/home/detail/${item.idWines}`} className="d-flex align-items-center justify-content-center"><span className="flaticon-visibility" /></Link>
                                                 </p>

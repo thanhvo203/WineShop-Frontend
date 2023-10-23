@@ -148,7 +148,6 @@ function DetailWine() {
                   <input
                     type="number"
                     className="quantity form-control input-number"
-                    
                     value={quantity}
                     onChange={handleChangeQuantity}
                   />
@@ -180,9 +179,18 @@ function DetailWine() {
                 </a>
                 </> :
                 <>
+                {wine.quantity === 0 ? 
+                  <a style={{backgroundColor:'grey',border:'1px'}} disabled className="btn btn-primary py-3 px-5 mr-2">
+                  Add to Cart
+                </a>
+                :
                 <a onClick={() => {add(quantity, user.id, wine.idWines) }} className="btn btn-primary py-3 px-5 mr-2">
                   Add to Cart
                 </a>
+                }
+                {/* <a onClick={() => {add(quantity, user.id, wine.idWines) }} className="btn btn-primary py-3 px-5 mr-2">
+                  Add to Cart
+                </a> */}
                 <Link to={`/home/cart/${user.id}`} className="btn btn-primary py-3 px-5">
                   Go to Cart
                 </Link>
