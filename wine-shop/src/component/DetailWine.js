@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { addToCart, getWinesById, inforFromToken } from "../service/WinesService";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getList } from "../redux/action";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -13,6 +13,7 @@ function DetailWine() {
   const [wine, setWine] = useState({});
   const [quantity,setQuantity] = useState(1);
   const [user, setUser] = useState({});
+  const carts = useSelector((state) => state.cartItems);
 
     const getUser = async () => {
         const data = await inforFromToken();
@@ -23,9 +24,10 @@ function DetailWine() {
     const data = await getWinesById(id)
     setWine(data);
   }
-  const add = async (quantity, idCustomer, idWines) => {
-    console.log(quantity, idCustomer, idWines);
-    try {
+  const add = async (quantity, idCustomer, idWines) => { 
+    const quantityInCart = carts.find((el) => el.wines.idWines == idWines)
+    if(quantity + quantityInCart.quality <= wine.quantity ){
+      try {
         if(user === null) {
           Swal.fire({
             icon:'warning',
@@ -49,6 +51,15 @@ function DetailWine() {
     } catch (error) {
         console.log(error);
     }
+    }else {
+      Swal.fire({
+        icon:'warning',
+        timer:2000,
+        title:'Quantity exceed quantity in stock',
+        showConfirmButton:false
+      })
+    }
+    
 }
   const checkUser = () => {
     if(user === null) {
@@ -67,24 +78,39 @@ function DetailWine() {
     }
   }
   const handlePlusQuantity = () => {
+    if(quantity < wine.quantity) {
       setQuantity(quantity + 1)
-  }
-  const handleMinusQuantity = () => {
-    setQuantity(quantity - 1)
-  }
-  const handleChangeQuantity = (event) => {
-    if (event.target.value > wine.quantity) {
-      setQuantity(wine.quantity);
-    }else if(event.target.value < 0){
-      setQuantity(1)
     }else{
-      setQuantity(event.target.value)
+      Swal.fire({
+        icon:'warning',
+        timer: 2000,
+        title:'Quantity exceed quantity in stock',
+        showConfirmButton: false
+      })
     }
-  };
+   }
+  
+  const handleMinusQuantity = () => {
+    if(quantity >= 1) {
+      setQuantity(quantity - 1)
+    }
+    
+  }
+  // const handleChangeQuantity = (event) => {
+  //   if (event.target.value > wine.quantity) {
+  //     setQuantity(wine.quantity);
+  //   }else if(event.target.value < 0){
+  //     setQuantity(1)
+  //   }else{
+  //     setQuantity(event.target.value)
+  //   }
+  // };
 
   
   const img  = "/"+ wine.imageWines
   useEffect(() => {
+    window.scrollTo(0,700)
+    document.title = 'WineShop - Detail Wine'
     getUser();
     getWine();
   }, [id])
@@ -145,12 +171,10 @@ function DetailWine() {
                       <i className="fa fa-minus" />
                     </button>
                   </span>
-                  <input
+                  <div
                     type="number"
                     className="quantity form-control input-number"
-                    value={quantity}
-                    onChange={handleChangeQuantity}
-                  />
+                  >{quantity}</div>
                   <span className="input-group-btn ml-2">
                     <button
                       onClick={handlePlusQuantity}

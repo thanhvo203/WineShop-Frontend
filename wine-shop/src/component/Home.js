@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { addToCart, getListWines, inforFromToken } from '../service/WinesService';
 import { Link, useNavigate } from 'react-router-dom';
 import jwtDecode from 'jwt-decode';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {  getList } from '../redux/action';
 import Header from './Header';
 import { toast } from 'react-toastify';
@@ -15,6 +15,7 @@ function Home() {
 
     const [wines, setWines] = useState();
     const [user, setUser] = useState({});
+    const carts = useSelector((state) => state.cartItems);
 
     const getUser = async () => {
         const data = await inforFromToken();
@@ -25,35 +26,82 @@ function Home() {
         const data = await getListWines();
         setWines(data);
     }
+    // const add = async (quantity, idCustomer, idWines) => {  
+    //     console.log(quantity, idCustomer, idWines);
+    //     try {
+    //         if(user === null) {
+    //           Swal.fire({
+    //             icon:'warning',
+    //             timer:2000,
+    //             title:'Please log in before performing this action',
+    //             showConfirmButton:true,
+    //             showCancelButton:true,
+    //             confirmButtonText: "Go to Log in"
+    //           }).then(async(result) => {
+    //             if(result.isConfirmed) {
+    //               navigate("/login")
+    //             }
+    //           })
+    //         }else{
+    //         await addToCart(quantity, user.id, idWines)
+    //         dispatch(getList(user.id))
+    //         toast.success("Add success", {
+    //             autoClose: 500
+    //         })
+    //       }
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
     const add = async (quantity, idCustomer, idWines) => {
-        console.log(quantity, idCustomer, idWines);
         try {
-            if(user === null) {
-              Swal.fire({
-                icon:'warning',
-                timer:2000,
-                title:'Please log in before performing this action',
-                showConfirmButton:true,
-                showCancelButton:true,
-                confirmButtonText: "Go to Log in"
-              }).then(async(result) => {
-                if(result.isConfirmed) {
-                  navigate("/login")
-                }
-              })
-            }else{
-            await addToCart(quantity, user.id, idWines)
-            dispatch(getList(user.id))
-            toast.success("Add success", {
-                autoClose: 500
+          if (user === null) {
+            Swal.fire({
+              icon: 'warning',
+              timer: 2000,
+              title: 'Please log in before performing this action',
+              showConfirmButton: true,
+              showCancelButton: true,
+              confirmButtonText: "Go to Log in"
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                navigate("/login")
+              }
             })
+          } else {
+            const quantityInCart = carts.find((el) => el.wines.idWines == idWines)
+            if(quantityInCart) {
+              if(quantity + quantityInCart.quality <= quantityInCart.wines.quantity) {
+                await addToCart(quantity, user.id, idWines)
+                dispatch(getList(user.id))
+                toast.success("Add success", {
+                  autoClose: 500
+                })
+              }else{
+                Swal.fire({
+                  icon:'warning',
+                  timer:2000,
+                  title:'Quantity exceed quantity in stock',
+                  showConfirmButton:false
+                })
+              }
+            }else{
+              await addToCart(quantity, user.id, idWines)
+              dispatch(getList(user.id))
+              toast.success("Add success", {
+                autoClose: 500
+              })
+            }
+            
           }
         } catch (error) {
-            console.log(error);
+          console.log(error);
         }
-    }
+      }
 
     useEffect(() => {
+        window.scrollTo(0,700)
+        document.title = 'WineShop - Home';
         getUser();
         listHome()
     }, [])
@@ -188,57 +236,57 @@ function Home() {
                     <div className="row d-flex">
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a  className="block-20 img" style={{ backgroundImage: 'url("images/image_1.jpg")' }}>
+                                <a href='https://terravenos.com/trellis/strong-red-wines/' target="_blank"  className="block-20 img" style={{ backgroundImage: 'url("images/image_1.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
-                                        <p><span className="fa fa-calendar" /> 23 April 2020</p>
+                                        <p><span className="fa fa-calendar" /> 23 April 2022</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a>The Recipe from a Winemaker’s Restaurent</a></h3>
-                                    <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a  className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <h3 className="heading mb-3"><a href='https://terravenos.com/trellis/strong-red-wines/' target="_blank" >11 STRONG RED WINES TO TRY TONIGHT!</a></h3>
+                                    <p>Climate and grape variety both play a role in crafting strong red wines. Widely available good strong red wines with high alcohol include Zinfandel, warm climate Cabernet Sauvignon, and new world Syrah (Shiraz). </p>
+                                    <a href='https://terravenos.com/trellis/strong-red-wines/' target="_blank"  className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a className="block-20 img" style={{ backgroundImage: 'url("images/image_2.jpg")' }}>
+                                <a href='https://www.vinovest.co/blog/strongest-wine' target="_blank"  className="block-20 img" style={{ backgroundImage: 'url("images/image_2.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
-                                        <p><span className="fa fa-calendar" /> 23 April 2020</p>
+                                        <p><span className="fa fa-calendar" /> 26 October 2023</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a >The Recipe from a Winemaker’s Restaurent</a></h3>
-                                    <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a  className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <h3 className="heading mb-3"><a href='https://www.vinovest.co/blog/strongest-wine' target="_blank"  >8 of the Strongest Wine Styles (Best Bottles, ABV, Prices)</a></h3>
+                                    <p>Most traditional wine styles have an alcohol content of around 10-14%.</p>
+                                    <a href='https://www.vinovest.co/blog/strongest-wine' target="_blank"  className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a className="block-20 img" style={{ backgroundImage: 'url("images/image_3.jpg")' }}>
+                                <a href='https://www.drinksurely.com/a/blog/wine-alcohol-content' target="_blank" className="block-20 img" style={{ backgroundImage: 'url("images/image_3.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
-                                        <p><span className="fa fa-calendar" /> 23 April 2020</p>
+                                        <p><span className="fa fa-calendar" /> 11 February 2023</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a >The Recipe from a Winemaker’s Restaurent</a></h3>
-                                    <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <h3 className="heading mb-3"><a href='https://www.drinksurely.com/a/blog/wine-alcohol-content' target="_blank" >How Much Alcohol is in Wine?</a></h3>
+                                    <p> High alcohol content will affect how quickly you feel the effects of that wine as you’re sipping it.</p>
+                                    <a href='https://www.drinksurely.com/a/blog/wine-alcohol-content' target="_blank" className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-flex align-items-stretch ftco-animate">
                             <div className="blog-entry d-flex">
-                                <a  className="block-20 img" style={{ backgroundImage: 'url("images/image_4.jpg")' }}>
+                                <a href='https://www.independent.co.uk/news/health/alcohol-smoking-cancer-rates-young-people-b2405319.html' target="_blank"  className="block-20 img" style={{ backgroundImage: 'url("images/image_4.jpg")' }}>
                                 </a>
                                 <div className="text p-4 bg-light">
                                     <div className="meta">
-                                        <p><span className="fa fa-calendar" /> 23 April 2020</p>
+                                        <p><span className="fa fa-calendar" /> 06 September 2023</p>
                                     </div>
-                                    <h3 className="heading mb-3"><a >The Recipe from a Winemaker’s Restaurent</a></h3>
-                                    <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                                    <a className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
+                                    <h3 className="heading mb-3"><a href='https://www.independent.co.uk/news/health/alcohol-smoking-cancer-rates-young-people-b2405319.html' target="_blank" >Alcohol and rising obesity led to ‘alarming’ surge in cancers in young people</a></h3>
+                                    <p>These results are interesting but colleagues will need to give considerable time and thought as to their interpretation.</p>
+                                    <a href='https://www.independent.co.uk/news/health/alcohol-smoking-cancer-rates-young-people-b2405319.html' target="_blank" className="btn-custom">Continue <span className="fa fa-long-arrow-right" /></a>
                                 </div>
                             </div>
                         </div>

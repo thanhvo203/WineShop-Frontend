@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import '../css/resigter.css';
 
 function Resigter() {
+
+
+  useEffect(() => {
+    document.title = 'WineShop - Resigter';
+  })
+
   return (
     <>
       <div id="thanhVH" >
@@ -19,7 +25,7 @@ function Resigter() {
                           style={{ marginRight: '8px' }}
                           className="input--style-4"
                           type="text"
-                         
+
                         />
                       </div>
                     </div>
@@ -29,7 +35,7 @@ function Resigter() {
                         <input
                           className="input--style-4"
                           type="text"
-                          
+
                         />
                       </div>
                     </div>
@@ -63,9 +69,9 @@ function Resigter() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-t-15">
-                    <button className="btn btn--radius-2 btn--blue" style={{backgroundColor:'#b7472a'}} type="submit">
+                    <button className="btn btn--radius-2 btn--blue" style={{ backgroundColor: '#b7472a' }} type="submit">
                       Submit
                     </button>
                   </div>

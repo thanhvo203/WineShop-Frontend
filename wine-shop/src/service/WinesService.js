@@ -82,3 +82,8 @@ export async function getListHistory(idCustomer, page, startDate, endDate) {
     const resolve = await axios.get(`http://localhost:8080/wines/order/history/${idCustomer}?page=${page}&&startDate=${startDate}&&endDate=${endDate}`)
     return resolve.data;
 }
+
+export async function getListDetailHistory(id) {
+    const resolve = await axios.get(`http://localhost:8080/wines/order-detail/detail-history?id=${id}`)
+    return resolve.data;
+}

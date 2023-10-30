@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { addToCart, getAllListWines, getLargestPrice, inforFromToken } from "../service/WinesService";
 import { useNavigate, Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getList } from "../redux/action";
 import Swal from "sweetalert2";
 import { toast } from 'react-toastify';
@@ -23,6 +23,8 @@ function ListWines() {
   let [minPrice, setMinPrice] = useState(0);
   let [maxPrice, setMaxprice] = useState();
   let [page, setPage] = useState(0);
+  const carts = useSelector((state) => state.cartItems);
+
 
 
   // ----------------------------------Search by price--------------------------------------
@@ -54,21 +56,26 @@ function ListWines() {
   // ---------------------------------Search ---------------------------------------
   const handleAlcohol = (event) => {
     const data = event.target.getAttribute('data-value');
+    document.getElementById('selectorAlcohol').textContent = data;
     const [value1, value2] = data.split('-')
     setFirstAlcohol(value1);
     setLastAlcohol(value2);
+
   }
   const handleColor = (event) => {
     const data = event.target.getAttribute('data-value')
     setColor(data);
+    document.getElementById('selectorColor').textContent = data;
   }
   const handleFlavor = (event) => {
     const data = event.target.getAttribute('data-value')
     setFlavor(data);
+    document.getElementById('selectorFlavor').textContent = data;
   }
   const handleCountry = (event) => {
     const data = event.target.getAttribute('data-value')
     setCountry(data)
+    document.getElementById('selectorCountry').textContent = data;
   }
   const handleTypeName = (event) => {
     const data = event.target.getAttribute('data-value')
@@ -123,7 +130,6 @@ function ListWines() {
   // --------------------------Add to cart ----------------------------------------
 
   const add = async (quantity, idCustomer, idWines) => {
-    console.log(quantity, idCustomer, idWines);
     try {
       if (user === null) {
         Swal.fire({
@@ -139,17 +145,36 @@ function ListWines() {
           }
         })
       } else {
-        await addToCart(quantity, user.id, idWines)
-        dispatch(getList(user.id))
-        toast.success("Add success", {
-          autoClose: 500
-        })
+        const quantityInCart = carts.find((el) => el.wines.idWines == idWines)
+        if(quantityInCart) {
+          if(quantity + quantityInCart.quality <= wine.quantity) {
+            await addToCart(quantity, user.id, idWines)
+            dispatch(getList(user.id))
+            toast.success("Add success", {
+              autoClose: 500
+            })
+          }else{
+            Swal.fire({
+              icon:'warning',
+              timer:2000,
+              title:'Quantity exceed quantity in stock',
+              showConfirmButton:false
+            })
+          }
+        }else{
+          await addToCart(quantity, user.id, idWines)
+          dispatch(getList(user.id))
+          toast.success("Add success", {
+            autoClose: 500
+          })
+        }
+        
       }
     } catch (error) {
       console.log(error);
     }
   }
-
+  console.log(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, minPrice, maxPrice);
 
 
   const getListWine = async (page1, firstAlcohol1, lastAlcohol1, color1, flavor1, country1, typeName1, nameWines1, minPrice1, maxPrice1) => {
@@ -161,25 +186,31 @@ function ListWines() {
       Swal.fire({
         timer: 2000,
         title: 'Not found data',
-        icon: 'error'
-      }).then(() => {
-        setColor("")
-        setCountry("")
-        setFirstAlcohol(0)
-        setLastAlcohol(100)
-        setTypeName("")
-        setFlavor("")
-        setNameWines("")
-        setPage(0)
-        setMinPrice(0);
-        setMaxprice(wine.priceWines)
-
+        icon: 'error'       
       })
+      setColor("")
+      setCountry("")
+      setFirstAlcohol(0)
+      setLastAlcohol(100)
+      setTypeName("")
+      setFlavor("")
+      setNameWines("")
+      setPage(0)
+      setMinPrice(0);
+      setMaxprice(wine.priceWines)
+      getListWine(0, 0, 100, "", "", "", "", "", 0, wine.priceWines)
+      document.getElementById('selectorAlcohol').textContent = 'Alcohol';
+      document.getElementById('selectorColor').textContent = 'Color';
+      document.getElementById('selectorFlavor').textContent = 'Flavor';
+      document.getElementById('selectorCountry').textContent = 'Country';
+      
 
     }
 
   }
   useEffect(() => {
+    window.scrollTo(0,700)
+    document.title = 'WineShop - All Wines';
     getUser()
     if (wine.priceWines != undefined) {
       getListWine(page, firstAlcohol, lastAlcohol, color, flavor, country, typeName, nameWines, minPrice, maxPrice)
@@ -203,7 +234,7 @@ function ListWines() {
               </div>
               <div className="row mb-4">
                 <div className="dropdown" style={{ marginLeft: '15px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} id="selectorAlcohol"  className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Alcohol
                   </button>
                   <ul className="dropdown-menu" onClick={handleAlcohol}>
@@ -213,7 +244,7 @@ function ListWines() {
                   </ul>
                 </div>
                 <div className="dropdown" style={{ marginLeft: '5px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} id="selectorColor"  className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Color
                   </button>
                   <ul className="dropdown-menu" onClick={handleColor}>
@@ -230,7 +261,7 @@ function ListWines() {
                 </div>
 
                 <div className="dropdown" style={{ marginLeft: '5px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} id="selectorFlavor" className="btn btn-secondary dropdown-toggle" type="button"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Flavor
                   </button>
                   <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -257,7 +288,7 @@ function ListWines() {
                   </div>
                 </div>
                 <div className="dropdown" style={{ marginLeft: '5px' }}>
-                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button style={{ backgroundColor: '#b7472a', color: 'white' }} id="selectorCountry" className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Country
                   </button>
                   <ul className="dropdown-menu" onClick={handleCountry}>
@@ -265,7 +296,7 @@ function ListWines() {
                     <li><a className="dropdown-item" data-value="Indian">Indian</a></li>
                     <li><a className="dropdown-item" data-value="France">France</a></li>
                     <li><a className="dropdown-item" data-value="Germany">Germany</a></li>
-                    <li><a className="dropdown-item" data-value="Hamiltion">Hamilton</a></li>
+                    <li><a className="dropdown-item" data-value="Hamilton">Hamilton</a></li>
                     <li><a className="dropdown-item" data-value="Kentucky">Kentucky</a></li>
                     <li><a className="dropdown-item" data-value="American">American</a></li>
                     <li><a className="dropdown-item" data-value="Ireland">Ireland</a></li>
@@ -352,32 +383,32 @@ function ListWines() {
                 <div className="categories">
                   <h3>Product Types</h3>
                   <ul className="p-0" onClick={handleTypeName}>
-                    <li>
+                    <li style={{cursor:'pointer'}}>
                       <a data-value="Brandy">
                         Brandy <span className="fa fa-chevron-right" />
                       </a>
                     </li>
-                    <li>
+                    <li style={{cursor:'pointer'}}>
                       <a data-value="Gin">
                         Gin <span className="fa fa-chevron-right" />
                       </a>
                     </li>
-                    <li>
+                    <li style={{cursor:'pointer'}}>
                       <a data-value="Rum">
                         Rum <span className="fa fa-chevron-right" />
                       </a>
                     </li>
-                    <li>
+                    <li style={{cursor:'pointer'}}>
                       <a data-value="Tequila">
                         Tequila <span className="fa fa-chevron-right" />
                       </a>
                     </li>
-                    <li>
+                    <li style={{cursor:'pointer'}}>
                       <a data-value="Vodka">
                         Vodka <span className="fa fa-chevron-right" />
                       </a>
                     </li>
-                    <li>
+                    <li style={{cursor:'pointer'}}>
                       <a data-value="Whisky">
                         Whisky <span className="fa fa-chevron-right" />
                       </a>
@@ -403,80 +434,65 @@ function ListWines() {
               <div className="sidebar-box ftco-animate">
                 <h3>Recent Blog</h3>
                 <div className="block-21 mb-4 d-flex">
-                  <a
+                  <a href='https://terravenos.com/trellis/strong-red-wines/' target="_blank"
                     className="blog-img mr-4"
                     style={{ backgroundImage: "url(/images/image_1.jpg)" }}
                   />
                   <div className="text">
                     <h3 className="heading">
-                      <a>
-                        Even the all-powerful Pointing has no control about the
-                        blind texts
+                      <a href='https://terravenos.com/trellis/strong-red-wines/' target="_blank">
+                      11 STRONG RED WINES TO TRY TONIGHT!
                       </a>
                     </h3>
                     <div className="meta">
                       <div>
                         <a>
-                          <span className="fa fa-calendar" /> Apr. 18, 2020
+                          <span className="fa fa-calendar" /> 23 April 2022
                         </a>
                       </div>
-                      <div>
-                        <a>
-                          <span className="fa fa-comment" /> 19
-                        </a>
-                      </div>
+                    
                     </div>
                   </div>
                 </div>
                 <div className="block-21 mb-4 d-flex">
-                  <a
+                  <a href='https://www.vinovest.co/blog/strongest-wine' target="_blank"
                     className="blog-img mr-4"
                     style={{ backgroundImage: "url(/images/image_2.jpg)" }}
                   />
                   <div className="text">
                     <h3 className="heading">
-                      <a>
-                        Even the all-powerful Pointing has no control about the
-                        blind texts
+                      <a href='https://www.vinovest.co/blog/strongest-wine' target="_blank">
+                        8 of the Strongest Wine Styles (Best Bottles, ABV, Prices)
                       </a>
                     </h3>
                     <div className="meta">
                       <div>
                         <a>
-                          <span className="fa fa-calendar" /> Apr. 18, 2020
+                          <span className="fa fa-calendar" /> 26 October 2023
                         </a>
                       </div>
-                      <div>
-                        <a>
-                          <span className="fa fa-comment" /> 19
-                        </a>
-                      </div>
+                  
                     </div>
                   </div>
                 </div>
                 <div className="block-21 mb-4 d-flex">
-                  <a
+                  <a href='https://www.drinksurely.com/a/blog/wine-alcohol-content' target="_blank"
                     className="blog-img mr-4"
                     style={{ backgroundImage: "url(/images/image_3.jpg)" }}
                   />
                   <div className="text">
                     <h3 className="heading">
-                      <a>
-                        Even the all-powerful Pointing has no control about the
-                        blind texts
+                      <a href='https://www.drinksurely.com/a/blog/wine-alcohol-content' target="_blank">
+                       How Much Alcohol is in Wine?
                       </a>
                     </h3>
                     <div className="meta">
                       <div>
                         <a>
-                          <span className="fa fa-calendar" /> Apr. 18, 2020
+                          <span className="fa fa-calendar" /> 11 February 2023
                         </a>
                       </div>
-                      <div>
-                        <a>
-                          <span className="fa fa-comment" /> 19
-                        </a>
-                      </div>
+                    
                     </div>
                   </div>
                 </div>

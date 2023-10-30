@@ -1,5 +1,5 @@
 import { Field, Form, Formik } from "formik";
-import React from "react";
+import React, { useEffect } from "react";
 
 
 import { Link, useNavigate } from "react-router-dom";
@@ -9,11 +9,11 @@ import Swal from "sweetalert2";
 function Login() {
     const navigate = useNavigate();
 
+
     const handleLogin = async (values) => {
         try {
             const result = await loginByEmailAndPassword(values);
             console.log(result);
-          
             if (result && result.status === 403) {
               Swal.fire({
                 icon: 'error',
@@ -39,6 +39,9 @@ function Login() {
        
 
     }
+    useEffect(() => {
+        document.title = 'WineShop - Login';
+    })
 
     return (
         <>

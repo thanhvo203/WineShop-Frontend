@@ -2087,7 +2087,7 @@ a.btn.disabled,
 fieldset:disabled a.btn {
   pointer-events: none; }
 
-.btn-primary {
+/* .btn-primary {
   color: #fff;
   background-color: #007bff;
   border-color: #007bff; }
@@ -2110,7 +2110,7 @@ fieldset:disabled a.btn {
     .btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus,
     .show > .btn-primary.dropdown-toggle:focus {
       -webkit-box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
-      box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5); }
+      box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5); } */
 
 .btn-secondary {
   color: #fff;
@@ -9121,7 +9121,7 @@ h1, h2, h3, h4, h5,
 
 .form-control {
   height: 52px !important;
-  background: #fff !important;
+  /* background: #fff !important; */
   color: #000000 !important;
   font-size: 18px;
   border-radius: 5px;

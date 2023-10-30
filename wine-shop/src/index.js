@@ -15,6 +15,7 @@ import store from './redux/store';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import History from './component/History';
+import DetailHistory from './component/DetailHistory';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -27,6 +28,7 @@ root.render(
         <Route path='/resigter' element={<Resigter />} />
         <Route element={<Layout />}>
           <Route path='/home/history/:id' element={<History />} />
+          <Route path='/home/history/detail/:id' element={<DetailHistory /> } />
           <Route path='/home/cart/:id' element={<Cart />}/>
           <Route path='/home' element={<Home />} />
           <Route path="/home/detail/:id" element={<DetailWine />}></Route>

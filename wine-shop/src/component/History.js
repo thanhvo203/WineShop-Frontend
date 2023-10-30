@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCustomerByIdAccount, getListHistory } from "../service/WinesService";
 
 
@@ -41,6 +41,8 @@ function History() {
     }
 
     useEffect(() => {
+        window.scrollTo(0,700)
+        document.title = 'WineShop - History'
         getList()
     }, [page, startDate, endDate])
 
@@ -152,9 +154,9 @@ function History() {
                                                     </p>
                                                 </td>
                                                 <td className="px-2 py-3" style={{ color: 'black', fontWeight: '600' }}>
-                                                    <p >
+                                                    <Link to={`/home/history/detail/${item.idOrder}`} >
                                                         <i style={{ color: '#b7472a' }} class="fa-solid fa-circle-info"></i>
-                                                    </p>
+                                                    </Link>
                                                 </td>
 
                                             </tr>

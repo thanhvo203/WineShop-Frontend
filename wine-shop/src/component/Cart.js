@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { addOrder, addOrderDetail, deleteFromCart, getCustomerByIdAccount, listCart, updateCart, updateQuantityWines } from "../service/WinesService";
+import { addOrder, addOrderDetail, deleteFromCart, getCustomerByIdAccount, getWinesById, listCart, updateCart, updateQuantityWines } from "../service/WinesService";
 import Swal from "sweetalert2";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -21,6 +21,7 @@ function Cart() {
     });
 
     const minusQuantity = async (idCart, quality, idWines, idCustomer) => {
+        
         if (quality <= 1) {
             Swal.fire({
                 icon: 'warning',
@@ -66,15 +67,17 @@ function Cart() {
 
     }
     const plusQuantity = async (idCart, quality, idWines, idCustomer) => {
-        await updateCart(idCart, quality + 1, idWines, idCustomer)
-        dispatch(getList(customer.idCustomer))
-        setCarts(await listCart(customer.idCustomer));
-        itemCarts.forEach((item) => {
-            if(item.wines.idWines === idWines) {
-                setTotal((prev) => prev + (1 * item.wines.priceWines));
-            }
-        });
-
+        const data = await getWinesById(idWines);
+        if( quality < data.quantity) {
+            await updateCart(idCart, quality + 1, idWines, idCustomer)
+            dispatch(getList(customer.idCustomer))
+            setCarts(await listCart(customer.idCustomer));
+            itemCarts.forEach((item) => {
+                if(item.wines.idWines === idWines) {
+                    setTotal((prev) => prev + (1 * item.wines.priceWines));
+                }
+            }); 
+        }
     }
     const handleDeleteItem = async (idWines, idCustomer) => {
         Swal.fire({
@@ -255,6 +258,8 @@ function Cart() {
     //---------------------------------------------
 
     useEffect(() => {
+        window.scrollTo(0,700)
+        document.title =  'WineShop - Cart'
         getCustomer();
         getListWines();
     }, [id, location])
@@ -396,7 +401,12 @@ function Cart() {
                                         <span style={{ textAlign: 'end', fontWeight: '600', color: 'black' }}>$</span><span id="totalAmount">{total}.00</span>
                                     </p>
                                 </div>
-                                <div id="paypal-button-container">
+                                {itemCarts.length === 0 ? 
+                                   <>
+                                   </>
+                                 :  
+                                 <>
+                                 <div id="paypal-button-container">
                                     <button style={{ width: '100%', border: '1px' }}
                                         onClick={() => handlePayment()}
                                         className=" btn btn-primary py-3 px-4 text-center"
@@ -404,6 +414,9 @@ function Cart() {
                                         Proceed to Checkout
                                     </button>
                                 </div>
+                                 </>
+                                 }
+                               
 
                             </div>
                         </div>
